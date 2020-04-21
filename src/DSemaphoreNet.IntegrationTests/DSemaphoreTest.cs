@@ -8,12 +8,11 @@ using FluentAssertions.Execution;
 using StackExchange.Redis;
 using Xunit;
 
-namespace DSemaphoreNet.Tests
+namespace DSemaphoreNet.IntegrationTests
 {
-    [Trait("Category", "INT")]
     public class DSemaphoreTest : IDisposable
     {
-        private static readonly ConnectionMultiplexer Connection = ConnectionMultiplexer.Connect("127.0.0.1:6379");
+        private readonly ConnectionMultiplexer _connection = ConnectionMultiplexer.Connect("127.0.0.1:6379");
         private string SemaphoreName => GetType().FullName;
 
         [Theory]
@@ -21,9 +20,9 @@ namespace DSemaphoreNet.Tests
         public async Task WaitAsync_MultipleConcurrence_ManageExpiration(int semaphoreCount, int iterationCount, TimeSpan timeout, TimeSpan retryTime, TimeSpan actionDelay, int successCountExpected)
         {
             // arrange
-            var db = Connection.GetDatabase();
+            var db = _connection.GetDatabase();
             var semaphoreResults = new ConcurrentBag<(int id, bool wasAcquired)>();
-            DSemaphore CreateSemaphore() => new DSemaphore(db, SemaphoreName, semaphoreCount, retryTime);
+            DSemaphore CreateSemaphore() => DSemaphore.Create(db, SemaphoreName, semaphoreCount, retryTime);
 
             // act
             var tasks = Enumerable.Range(0, iterationCount).Select(index => Task.Run(async () => semaphoreResults.Add(await RunWaitAsync(index, CreateSemaphore, actionDelay, timeout))));
@@ -77,17 +76,19 @@ namespace DSemaphoreNet.Tests
 
         public void Dispose()
         {
-            foreach (var endPoint in Connection.GetEndPoints())
+            foreach (var endPoint in _connection.GetEndPoints())
             {
-                var server = Connection.GetServer(endPoint);
+                var server = _connection.GetServer(endPoint);
 
                 if (server == null) continue;
 
                 foreach (var key in server.Keys(pattern: $"{SemaphoreName}.*"))
                 {
-                    Connection.GetDatabase().KeyDelete(key);
+                    _connection.GetDatabase().KeyDelete(key);
                 }
             }
+
+            _connection.Dispose();
         }
     }
 }

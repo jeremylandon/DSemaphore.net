@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DSemaphoreNet
+namespace DSemaphoreNet.Internals
 {
     internal class DSemaphoreContext
     {

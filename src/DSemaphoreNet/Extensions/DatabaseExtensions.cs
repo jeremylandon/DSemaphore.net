@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using DSemaphoreNet.Internals;
 using StackExchange.Redis;
 
 namespace DSemaphoreNet.Extensions

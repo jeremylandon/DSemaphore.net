@@ -7,7 +7,7 @@ namespace DSemaphoreNet
     /// <summary>
     /// Distributed semaphore interface
     /// </summary>
-    interface IDSemaphore : IAsyncDisposable
+    public interface IDSemaphore : IAsyncDisposable
     {
         /// <summary>
         /// Asynchronously waits to enter the <see cref="DSemaphore"/>

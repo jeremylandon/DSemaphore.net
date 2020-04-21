@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using DSemaphoreNet.Extensions;
+using DSemaphoreNet.Internals;
 using StackExchange.Redis;
 
 namespace DSemaphoreNet
@@ -26,13 +27,7 @@ namespace DSemaphoreNet
 
         private bool _isDisposed;
 
-        /// <summary>
-        /// Create a new instance of the <see cref="DSemaphore"/> class, specifying the database and the semaphore name the lock is for.
-        /// </summary>
-        /// <exception cref="T:System.ArgumentNullException">The database is required.</exception>
-        /// <exception cref="T:System.ArgumentException">The semaphore name is required.</exception>
-        /// <exception cref="T:System.ArgumentOutOfRangeException">the number of requests that can be granted concurrently cannot be less than 1.</exception>
-        public DSemaphore(IDatabase db, string semaphoreName, int maxCount, TimeSpan? retryTime = null, CancellationToken cancellationToken = default)
+        private DSemaphore(IDatabase db, string semaphoreName, int maxCount, TimeSpan? retryTime = null, CancellationToken cancellationToken = default)
         {
             // ReSharper disable once JoinNullCheckWithUsage
             if (db == null)
@@ -57,6 +52,17 @@ namespace DSemaphoreNet
             _cancellationToken = cancellationToken;
             _contexts = new ConcurrentDictionary<string, Lazy<DSemaphoreContext>>();
             _locker = new SemaphoreSlim(1, 1);
+        }
+
+        /// <summary>
+        /// Create a new instance of the <see cref="DSemaphore"/> class, specifying the database and the semaphore name the lock is for.
+        /// </summary>
+        /// <exception cref="T:System.ArgumentNullException">The database is required.</exception>
+        /// <exception cref="T:System.ArgumentException">The semaphore name is required.</exception>
+        /// <exception cref="T:System.ArgumentOutOfRangeException">the number of requests that can be granted concurrently cannot be less than 1.</exception>
+        internal static DSemaphore Create(IDatabase db, string semaphoreName, int maxCount, TimeSpan? retryTime = null, CancellationToken cancellationToken = default)
+        {
+            return new DSemaphore(db, semaphoreName, maxCount, retryTime, cancellationToken);
         }
 
         public async Task<bool> WaitAsync(TimeSpan timeout, string id = null,
