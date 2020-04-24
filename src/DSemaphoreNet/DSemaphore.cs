@@ -65,8 +65,7 @@ namespace DSemaphoreNet
             return new DSemaphore(db, semaphoreName, maxCount, retryTime, cancellationToken);
         }
 
-        public async Task<bool> WaitAsync(TimeSpan timeout, string id = null,
-            CancellationToken cancellationToken = default)
+        public async Task<bool> WaitAsync(TimeSpan timeout, string id = null, CancellationToken cancellationToken = default)
         {
             CheckDispose();
 
