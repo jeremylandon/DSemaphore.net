@@ -14,7 +14,6 @@ A distributed semaphore based on Redis.
 
 ```csharp
 var connection = ConnectionMultiplexer.Connect("127.0.0.1:6379");
-var timeout = TimeSpan.FromSeconds(30);
 using (var semaphoreFactory = DSemaphoreFactory.Create(connection))
 {
   // ...
@@ -31,7 +30,6 @@ using (var semaphoreFactory = DSemaphoreFactory.Create(connection))
 
 ```csharp
 int maxCount = 5;
-var timeout = TimeSpan.FromSeconds(30);
 await using (var semaphore = semaphoreFactory.CreateSemaphore("foo", maxCount))
 {
     foreach (var entity in collection)
@@ -50,6 +48,7 @@ await using (var semaphore = semaphoreFactory.CreateSemaphore("foo", maxCount))
 - `cancellationToken` _optional_,
 
 ```csharp
+var timeout = TimeSpan.FromSeconds(30);
 if (await semaphore.WaitAsync(timeout))
 {
     // an action ...
